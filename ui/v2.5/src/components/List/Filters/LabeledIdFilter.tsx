@@ -1,11 +1,13 @@
 import React from "react";
 import { Form } from "react-bootstrap";
 import { FilterSelect, SelectObject } from "src/components/Shared/Select";
-import { Criterion } from "src/models/list-filter/criteria/criterion";
+import { objectTitle } from "src/core/files";
+import { galleryTitle } from "src/core/galleries";
+import { ModifierCriterion } from "src/models/list-filter/criteria/criterion";
 import { ILabeledId } from "src/models/list-filter/types";
 
 interface ILabeledIdFilterProps {
-  criterion: Criterion<ILabeledId[]>;
+  criterion: ModifierCriterion<ILabeledId[]>;
   onValueChanged: (value: ILabeledId[]) => void;
 }
 
@@ -13,24 +15,38 @@ export const LabeledIdFilter: React.FC<ILabeledIdFilterProps> = ({
   criterion,
   onValueChanged,
 }) => {
+  const criterionOption = criterion.modifierCriterionOption();
+  const { inputType } = criterionOption;
+
   if (
-    criterion.criterionOption.type !== "performers" &&
-    criterion.criterionOption.type !== "studios" &&
-    criterion.criterionOption.type !== "parent_studios" &&
-    criterion.criterionOption.type !== "tags" &&
-    criterion.criterionOption.type !== "sceneTags" &&
-    criterion.criterionOption.type !== "performerTags" &&
-    criterion.criterionOption.type !== "parentTags" &&
-    criterion.criterionOption.type !== "childTags" &&
-    criterion.criterionOption.type !== "movies"
-  )
+    inputType !== "performers" &&
+    inputType !== "studios" &&
+    inputType !== "scene_tags" &&
+    inputType !== "performer_tags" &&
+    inputType !== "tags" &&
+    inputType !== "scenes" &&
+    inputType !== "groups" &&
+    inputType !== "galleries"
+  ) {
     return null;
+  }
+
+  function getLabel(i: SelectObject) {
+    switch (inputType) {
+      case "galleries":
+        return galleryTitle(i);
+      case "scenes":
+        return objectTitle(i);
+    }
+
+    return i.name ?? i.title ?? "";
+  }
 
   function onSelectionChanged(items: SelectObject[]) {
     onValueChanged(
       items.map((i) => ({
         id: i.id,
-        label: i.name ?? i.title ?? "",
+        label: getLabel(i),
       }))
     );
   }
@@ -38,7 +54,7 @@ export const LabeledIdFilter: React.FC<ILabeledIdFilterProps> = ({
   return (
     <Form.Group>
       <FilterSelect
-        type={criterion.criterionOption.type}
+        type={inputType}
         isMulti
         onSelect={onSelectionChanged}
         ids={criterion.value.map((labeled) => labeled.id)}

@@ -4,21 +4,30 @@ import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { useIntl } from "react-intl";
 import { Icon } from "./Icon";
 import useFocus from "src/utils/focus";
+import cx from "classnames";
 
 interface IClearableInput {
+  className?: string;
   value: string;
   setValue: (value: string) => void;
-  focus: ReturnType<typeof useFocus>;
+  focus?: ReturnType<typeof useFocus>;
+  placeholder?: string;
 }
 
 export const ClearableInput: React.FC<IClearableInput> = ({
+  className,
   value,
   setValue,
   focus,
+  placeholder,
 }) => {
   const intl = useIntl();
 
-  const [queryRef, setQueryFocus] = focus;
+  const [defaultQueryRef, setQueryFocusDefault] = useFocus();
+  const [queryRef, setQueryFocus] = focus || [
+    defaultQueryRef,
+    setQueryFocusDefault,
+  ];
   const queryClearShowing = !!value;
 
   function onChangeQuery(event: React.FormEvent<HTMLInputElement>) {
@@ -31,10 +40,10 @@ export const ClearableInput: React.FC<IClearableInput> = ({
   }
 
   return (
-    <div className="clearable-input-group">
+    <div className={cx("clearable-input-group", className)}>
       <FormControl
         ref={queryRef}
-        placeholder={`${intl.formatMessage({ id: "actions.search" })}…`}
+        placeholder={placeholder}
         value={value}
         onInput={onChangeQuery}
         className="clearable-text-field"
